@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Describe the short video"
+        description: "Describe the short video in Hebrew or English"
         required: true
         type: string
-        default: "A small red train moving slowly through a green countryside, cinematic wide shot"
+        default: "רכבת אדומה נוסעת לאט באזור כפרי ירוק, צילום קולנועי רחב"
       steps:
         description: "Inference steps; CPU video generation can take a very long time"
         required: true
