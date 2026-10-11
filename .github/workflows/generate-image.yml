@@ -1,0 +1,62 @@
+name: Generate image (CPU)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Describe the image"
+        required: true
+        type: string
+        default: "A tiny wooden cabin in a snowy forest at sunrise, cinematic photography"
+      steps:
+        description: "Inference steps (more steps take longer)"
+        required: true
+        type: choice
+        options:
+          - "10"
+          - "15"
+          - "20"
+        default: "10"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generate-image-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-image.txt
+
+      - name: Install CPU PyTorch and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-image.txt
+
+      - name: Generate image
+        env:
+          PROMPT: ${{ inputs.prompt }}
+          STEPS: ${{ inputs.steps }}
+        run: python scripts/generate_image.py
+
+      - name: Upload generated image
+        if: always() && hashFiles('output/image.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-image
+          path: output/image.png
+          if-no-files-found: error
+          retention-days: 7
