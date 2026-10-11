@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Describe the scene to generate and animate"
+        description: "Describe the scene in Hebrew or English"
         required: true
         type: string
-        default: "A tiny wooden cabin in a magical forest, golden sunbeams, fireflies, cinematic, detailed"
+        default: "בקתה קטנה ביער קסום, קרני שמש זהובות וגחליליות"
       steps:
         description: "Stable Diffusion steps (higher takes longer)"
         required: true
