@@ -6,6 +6,8 @@ import torch
 from diffusers import DPMSolverMultistepScheduler, StableDiffusionPipeline
 from PIL import Image
 
+from prompt_translation import translate_prompt_if_hebrew
+
 PROMPT = os.environ.get(
     "PROMPT",
     "A tiny wooden cabin in a magical forest, golden sunbeams, fireflies, cinematic, detailed",
@@ -19,6 +21,8 @@ SIZE = 384
 def main() -> None:
     output = Path("output")
     output.mkdir(parents=True, exist_ok=True)
+
+    prompt = translate_prompt_if_hebrew(PROMPT)
 
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
     print(f"Loading {MODEL_ID} on CPU. The first run downloads model weights.")
@@ -36,7 +40,7 @@ def main() -> None:
     generator = torch.Generator(device="cpu").manual_seed(42)
     with torch.inference_mode():
         base = pipe(
-            prompt=PROMPT,
+            prompt=prompt,
             width=SIZE,
             height=SIZE,
             num_inference_steps=STEPS,
