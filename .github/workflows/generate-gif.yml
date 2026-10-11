@@ -1,0 +1,72 @@
+name: Generate animated GIF (CPU)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Describe the scene to generate and animate"
+        required: true
+        type: string
+        default: "A tiny wooden cabin in a magical forest, golden sunbeams, fireflies, cinematic, detailed"
+      steps:
+        description: "Stable Diffusion steps (higher takes longer)"
+        required: true
+        type: choice
+        options:
+          - "5"
+          - "8"
+          - "10"
+        default: "5"
+      frames:
+        description: "Number of animation frames"
+        required: true
+        type: choice
+        options:
+          - "12"
+          - "16"
+          - "20"
+        default: "16"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generate-gif-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-image.txt
+
+      - name: Install CPU PyTorch and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-image.txt
+
+      - name: Generate animated GIF
+        env:
+          PROMPT: ${{ inputs.prompt }}
+          STEPS: ${{ inputs.steps }}
+          FRAMES: ${{ inputs.frames }}
+        run: python scripts/generate_gif.py
+
+      - name: Upload animated GIF
+        if: always() && hashFiles('output/animation.gif') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-gif
+          path: output/animation.gif
+          if-no-files-found: error
+          retention-days: 7
