@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Describe the image"
+        description: "Describe the image in Hebrew or English"
         required: true
         type: string
-        default: "A tiny wooden cabin in a snowy forest at sunrise, cinematic photography"
+        default: "בקתת עץ קטנה ביער מושלג עם זריחה ואור קולנועי"
       steps:
         description: "Inference steps (more steps take longer)"
         required: true
