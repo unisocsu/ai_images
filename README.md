@@ -9,7 +9,7 @@ GitHub-hosted public-repository runners currently provide a standard Linux runne
 ## Workflows
 
 - **Generate image (CPU)** — Stable Diffusion 1.5, one 512×512 PNG, 10 inference steps by default.
-- **Generate video (CPU, experimental)** — an older LTX-Video Diffusers checkpoint, using a very short low-resolution clip and few steps. Expect very slow generation and possible out-of-memory, disk, or time-limit failures.
+- **Generate video (CPU, experimental)** — ModelScope text-to-video 1.7B, configured for a very short 256×256 clip and few steps. Expect very slow generation and possible out-of-memory, disk, or time-limit failures.
 
 ## Run it
 
@@ -23,7 +23,7 @@ No API key is required for the configured public model repositories. Model weigh
 ## Model notes
 
 - Image: `stable-diffusion-v1-5/stable-diffusion-v1-5` through Hugging Face Diffusers.
-- Video: `a-r-r-o-w/LTX-Video-0.9.1-diffusers` through Diffusers. The video workflow is a best-effort CPU experiment; model/runtime compatibility can change as upstream packages evolve. Check the upstream model card and license before redistributing outputs or weights.
+- Video: `damo-vilab/text-to-video-ms-1.7b` through Diffusers. The upstream model card states English-only input and a CC-BY-NC-ND license, which restricts use and redistribution; check the model card before using or sharing outputs. This workflow is a best-effort CPU experiment, not a promise of successful generation.
 
 ## Troubleshooting
 
