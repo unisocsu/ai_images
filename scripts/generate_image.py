@@ -4,13 +4,19 @@ from pathlib import Path
 import torch
 from diffusers import DPMSolverMultistepScheduler, StableDiffusionPipeline
 
+from prompt_translation import translate_prompt_if_hebrew
+
 PROMPT = os.environ.get("PROMPT", "A tiny wooden cabin in a snowy forest at sunrise, cinematic photography")
 STEPS = int(os.environ.get("STEPS", "10"))
 MODEL_ID = "stable-diffusion-v1-5/stable-diffusion-v1-5"
 
+
 def main() -> None:
     output = Path("output")
     output.mkdir(parents=True, exist_ok=True)
+
+    # Translate Hebrew locally before loading the larger image model.
+    prompt = translate_prompt_if_hebrew(PROMPT)
 
     # CPU-only inference: do not attempt to use CUDA even if a package detects it.
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
@@ -29,7 +35,7 @@ def main() -> None:
     generator = torch.Generator(device="cpu").manual_seed(42)
     with torch.inference_mode():
         image = pipe(
-            prompt=PROMPT,
+            prompt=prompt,
             width=512,
             height=512,
             num_inference_steps=STEPS,
@@ -40,6 +46,7 @@ def main() -> None:
     destination = output / "image.png"
     image.save(destination)
     print(f"Saved {destination.resolve()}")
+
 
 if __name__ == "__main__":
     main()
