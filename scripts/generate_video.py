@@ -3,12 +3,15 @@ from pathlib import Path
 
 import torch
 from diffusers import DPMSolverMultistepScheduler, DiffusionPipeline
-
-from prompt_translation import translate_prompt_if_hebrew
 from diffusers.utils import export_to_video
 
-PROMPT = os.environ.get("PROMPT", "A small red train moving slowly through a green countryside, cinematic wide shot")
-STEPS = int(os.environ.get("STEPS", "4"))
+from prompt_translation import translate_prompt_if_hebrew
+
+PROMPT = os.environ.get(
+    "PROMPT",
+    "A small red train moving slowly through a green countryside, cinematic wide shot",
+)
+STEPS = int(os.environ.get("STEPS", "12"))
 MODEL_ID = "damo-vilab/text-to-video-ms-1.7b"
 
 
@@ -20,7 +23,15 @@ def main() -> None:
     # The video model expects English; translate Hebrew prompts locally first.
     prompt = translate_prompt_if_hebrew(PROMPT)
 
-    print(f"Loading {MODEL_ID} on CPU. This is experimental and may be slow or exceed runner limits.")
+    # ModelScope works with a 16-frame clip; at 8 fps this is 2 seconds.
+    # More inference steps can improve prompt adherence but increase CPU runtime.
+    num_frames = 16
+    fps = 8
+
+    print(
+        f"Loading {MODEL_ID} on CPU; generating {num_frames} frames "
+        f"at {fps} fps with {STEPS} inference steps."
+    )
     pipe = DiffusionPipeline.from_pretrained(
         MODEL_ID,
         torch_dtype=torch.float32,
@@ -33,23 +44,38 @@ def main() -> None:
     if hasattr(pipe, "enable_attention_slicing"):
         pipe.enable_attention_slicing()
 
-    # Keep the first test intentionally small. CPU inference can still take a long time.
     generator = torch.Generator(device="cpu").manual_seed(42)
     with torch.inference_mode():
         result = pipe(
             prompt=prompt,
             height=256,
             width=256,
-            num_frames=8,
+            num_frames=num_frames,
             num_inference_steps=STEPS,
             guidance_scale=7.5,
             generator=generator,
         )
 
     frames = result.frames[0]
+    if len(frames) < num_frames:
+        raise RuntimeError(
+            f"Video model returned only {len(frames)} frames; expected {num_frames}. "
+            "Refusing to publish an unexpectedly short clip."
+        )
+
     destination = output / "video.mp4"
-    export_to_video(frames, str(destination), fps=8)
-    print(f"Saved {destination.resolve()}")
+    export_to_video(frames, str(destination), fps=fps)
+    size_bytes = destination.stat().st_size
+    if size_bytes < 10_000:
+        raise RuntimeError(
+            f"Generated MP4 is suspiciously small ({size_bytes} bytes); "
+            "refusing to treat it as a valid video."
+        )
+
+    print(
+        f"Saved {destination.resolve()} — {len(frames)} frames at {fps} fps "
+        f"({len(frames) / fps:.1f} seconds), {size_bytes:,} bytes"
+    )
 
 
 if __name__ == "__main__":
