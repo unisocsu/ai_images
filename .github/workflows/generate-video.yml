@@ -13,10 +13,10 @@ on:
         required: true
         type: choice
         options:
-          - "4"
-          - "6"
           - "8"
-        default: "4"
+          - "12"
+          - "16"
+        default: "12"
 
 permissions:
   contents: read
