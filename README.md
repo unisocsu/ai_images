@@ -10,7 +10,7 @@ GitHub-hosted runners have limited CPU, RAM, and SSD. Video diffusion on CPU is 
 
 - **Generate image (CPU)** — Stable Diffusion 1.5, one 512×512 PNG.
 - **Generate animated GIF (CPU)** — generates one AI image and creates a looping GIF with a gentle zoom animation. The GIF does not generate new scene content in every frame.
-- **Generate video (CPU, experimental)** — ModelScope text-to-video 1.7B, configured for a very short 256×256 clip and few steps. Expect very slow generation and possible out-of-memory, disk, or time-limit failures.
+- **Generate video (CPU, experimental)** — ModelScope text-to-video 1.7B, configured for a 256×256, 16-frame clip (2 seconds at 8 fps) with 12 inference steps by default. CPU generation remains experimental and can be very slow or fail due to resource limits; more steps can improve quality but take longer.
 
 ## Run it
 
