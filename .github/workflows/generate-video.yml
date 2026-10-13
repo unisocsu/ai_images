@@ -45,6 +45,15 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-video.txt
 
+      # Reuse downloaded model weights and tokenizers across runs when GitHub's cache is available.
+      - name: Cache Hugging Face models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-video-${{ runner.os }}-py311-v1-${{ hashFiles('requirements-video.txt') }}
+          restore-keys: |
+            hf-video-${{ runner.os }}-py311-v1-
+
       - name: Install CPU PyTorch and dependencies
         run: |
           python -m pip install --upgrade pip
