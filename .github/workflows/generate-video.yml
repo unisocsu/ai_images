@@ -8,8 +8,17 @@ on:
         required: true
         type: string
         default: "רכבת אדומה נוסעת לאט באזור כפרי ירוק, צילום קולנועי רחב"
+      seconds:
+        description: "Video duration in seconds"
+        required: true
+        type: choice
+        options:
+          - "2"
+          - "3"
+          - "4"
+        default: "2"
       steps:
-        description: "Inference steps; CPU video generation can take a very long time"
+        description: "Inference steps; higher values take longer on CPU"
         required: true
         type: choice
         options:
@@ -17,6 +26,14 @@ on:
           - "12"
           - "16"
         default: "12"
+      fps:
+        description: "Frames per second"
+        required: true
+        type: choice
+        options:
+          - "4"
+          - "8"
+        default: "8"
 
 permissions:
   contents: read
@@ -63,7 +80,9 @@ jobs:
       - name: Generate short video (experimental)
         env:
           PROMPT: ${{ inputs.prompt }}
+          SECONDS: ${{ inputs.seconds }}
           STEPS: ${{ inputs.steps }}
+          FPS: ${{ inputs.fps }}
         run: python scripts/generate_video.py
 
       - name: Upload generated video
